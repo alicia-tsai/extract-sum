@@ -106,3 +106,4 @@ venv.bak/
 # other
 .idea/
 .DS_Store
+.xml
