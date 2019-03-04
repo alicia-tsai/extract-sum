@@ -108,3 +108,4 @@ venv.bak/
 .DS_Store
 .xml
 .csv
+.sqlite
