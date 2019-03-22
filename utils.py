@@ -17,10 +17,11 @@ def get_nips_data():
     papers['abstract'] = papers['abstract'].str.replace('\r', '').str.replace('\n', ' ')
     papers['paper_text'] = papers['paper_text'].str.replace('\n', ' ')
     mask = papers['abstract'] != 'Abstract Missing'
+    paper_title = papers[mask]['title'].tolist()
     paper_abstract = papers[mask]['abstract'].tolist()
     paper_text = papers[mask]['paper_text'].tolist()  # content of paper with abstract
 
-    return paper_abstract, paper_text
+    return paper_title, paper_abstract, paper_text
 
 
 def get_wiki_data():
@@ -30,7 +31,7 @@ def get_wiki_data():
     wiki['headline'] = wiki['headline'].str.replace('\n', ' ')
     wiki['text'] = wiki['text'].str.replace('\n', ' ')
 
-    return wiki['headline'].tolist(), wiki['text'].tolist()
+    return wiki['title'].tolist(), wiki['headline'].tolist(), wiki['text'].tolist()
 
 
 def get_outlook_data():
@@ -102,15 +103,19 @@ def get_glove_dict():
 def embed_sentence(doc, glove_dict):
     """Return sentence embeddings (average word embeddings)."""
     corpus = split_sentence(doc)
-    embeddings = []
+    embeddings = None
     for sentence in corpus:
         vector = [glove_dict[word] for word in sentence.split() if word in glove_dict]
-        embeddings.append(np.mean(vector, axis=0))
+        if embeddings is None:
+            embeddings = np.mean(vector, axis=0)
+        else:
+            if np.mean(vector, axis=0).shape != embeddings.shape
+            np.vstack((embeddings, np.mean(vector, axis=0)))
 
-    embeddings = np.array(embeddings)
-    embeddings_sparse = sparse.csr_matrix(embeddings)
+    #embeddings = np.array(embeddings)
+    #embeddings_sparse = sparse.csr_matrix(embeddings)
 
-    return embeddings, embeddings_sparse
+    return embeddings#, embeddings_sparse
 
 
 def get_rouge_score(summary, reference, print_flag=True):

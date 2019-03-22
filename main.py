@@ -30,7 +30,8 @@ def extract_summary(doc, ref=None, title=None, k=5):
     # Sentence embeddings
     print('\n====== Extracted summary: sentence embeddings ======')
     glove_dict = utils.get_glove_dict()
-    embed, embed_sparse = utils.embed_sentence(doc, glove_dict)
+    embed = utils.embed_sentence(doc, glove_dict)
+    print(embed)
     print('Sentence embedding shape: (%d, %d)' %(embed.shape[0], embed.shape[1]))
     start = time.time()
     exemplar_indices, _ = summarizer.identify_exemplars(embed)

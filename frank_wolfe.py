@@ -513,7 +513,7 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
 
         K_is_None = K is None
         if sps.issparse(subset_A):
-            print("A is sparse")
+            #print("A is sparse")
             return self.identify_exemplars_sparse(subset_A)
 
         self.timer.start()
@@ -526,6 +526,7 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
         if self.do_add_equality_constraint: #and self.do_rbf_kernel:
             K += self.zeta ** 2
 
+        #print(type(K))  #TODO: BUG
         trK = np.trace(K)
         n, m = A.shape
 
@@ -548,15 +549,15 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
         len_of_exemplar_index_lst = [len(exemplar_index_lst)]
 
         #print(self.beta)
-        pbar = tqdm(total = int(self.max_iterations), unit="iter", unit_scale=False, leave=False)
+        #pbar = tqdm(total = int(self.max_iterations), unit="iter", unit_scale=False, leave=False)
         try:
             #pdb.set_trace()
             for iteration in range(int(self.max_iterations)):
                 if self.greedy and len(exemplar_index_lst) >= self.num_exemp:
-                    pbar.update(int(self.max_iterations) - iteration)
+                    #pbar.update(int(self.max_iterations) - iteration)
                     break
-                pbar.set_postfix(num_exemplars = len_of_exemplar_index_lst[-1], refresh=False)
-                pbar.update(1)
+                #pbar.set_postfix(num_exemplars = len_of_exemplar_index_lst[-1], refresh=False)
+                #pbar.update(1)
 
                 if False and n < len(exemplar_index_lst) and n < m and not self.do_rbf_kernel:
                 # Because I no longer append row of 1's when adding equality constraint, we need to always use the K matrix
@@ -575,8 +576,9 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
                     trXTKX = np.einsum('ij,ji->', X.T, KX)
 
 
-                cost_lst.append(trXTKX - 2 * trXTK + trK)
+                cost_lst.append(trXTKX - 2 * trXTK + trK)  # ||AX - A||_F: forbenius norm
 
+                # Gradient calculation
                 if self.epsilon == 0:
                     gradient = 2 * (KX - K)#with respect to Z
                 else:
@@ -623,7 +625,7 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
             print("Graceful Interrruption")
             time.sleep(1)
 
-        pbar.close()
+        #pbar.close()
         if not self.greedy:
             exemplar_indices = self.make_exemplar_indices(X.T, self.num_exemp)
         else:
@@ -674,7 +676,7 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
                 # in this situation we want to avoid the explicity use of K
                 AX = A.dot(X)
                 AX_dense = AX.toarray()
-                KX = A_dense.T.dot(AX_dense)
+                KX = AX_dense.T.dot(AX_dense)  #TODO:BUG
                 trXTKX = np.linalg.norm(AX_dense, ord="fro")**2
             else:
                 #in this situation, we would rather use K than A
@@ -733,13 +735,13 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
                 print("ALERT: less than num_exemp were selected: " + str(len(exemplar_indices)))
         self.timer.stop()
 
-        print("##########################", self.verbose)
-        print("Number of Iterations: " + str(iteration + 1), self.verbose)
-        print("Duration: " + str(self.timer.get_latest()), self.verbose)
+        # print("##########################", self.verbose)
+        # print("Number of Iterations: " + str(iteration + 1), self.verbose)
+        # print("Duration: " + str(self.timer.get_latest()), self.verbose)
         num_exemplar = len(exemplar_indices)
         frac_exemplar = num_exemplar / A.shape[1]
-        print("Num exemplars: " + str(num_exemplar), self.verbose)
-        print("Fraction exemplars: " + str(frac_exemplar), self.verbose)
+        # print("Num exemplars: " + str(num_exemplar), self.verbose)
+        # print("Fraction exemplars: " + str(frac_exemplar), self.verbose)
 
         return exemplar_indices, (X_dense, cost_lst, G_lst)
 
