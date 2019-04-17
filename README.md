@@ -1,5 +1,8 @@
 ## Extractive Summarization using Frank Wolfe Algorithm
 
+### Example
+Please see `notebooks/demo.ipynb` notebook for demo.
+
 ### Dataset
   - [NIPS conference papers](https://www.kaggle.com/benhamner/nips-papers#papers.csv)
   - [WikiHow Articles](https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358), [Github page](https://github.com/mahnazkoupaee/WikiHow-Dataset)
@@ -16,6 +19,3 @@
     - pandas==0.24.1
     - scikit-learn==0.20.2
     - scipy==1.2.1
-
-### Example
-Please see `extract-sum-example.ipynb` notebook for demo.
