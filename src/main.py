@@ -9,7 +9,7 @@ import utils
 from frank_wolfe import DR_Frank_Wolfe
 
 
-def extract_summary(doc, ref=None, title=None, k=5, verbose=True, rouge_embed=False, vectorize_scores=False):
+def extract_summary(doc, ref=None, title=None, k=5, verbose=True, rouge_embed=False, vectorize_scores=False, report_rouge=True):
     X = utils.vectorize_text(doc)  # tfidf vectors
     if verbose: print("# sentence: %d, # vocab: %d"  %(X.shape[0], X.shape[1]))  # (num_sentence, num_vocab)
     num_ref = len(utils.split_sentence(ref))
@@ -50,7 +50,7 @@ def extract_summary(doc, ref=None, title=None, k=5, verbose=True, rouge_embed=Fa
     if verbose: print('Sentence embedding computation time: %.3f' %(runtime['embed']))
 
     # Report ROUGE scores
-    if ref:
+    if report_rouge and ref:
         methods = ['random', 'tfidf', 'embed']
         scores = {}
         if verbose: print('\n=============== ROUGE Scores ===============')
@@ -69,7 +69,7 @@ def extract_summary(doc, ref=None, title=None, k=5, verbose=True, rouge_embed=Fa
 def report_rouge_scores(docs, refs, titles=None, k=5, verbose=False, rouge_embed=False):
     rouge_scores = defaultdict(list) # dictionary to store all rouge scores
     for doc, ref, title in zip(docs, refs, titles):
-        _, _, scores = extract_summary(doc, ref, title, k, verbose, rouge_embed, vectorize_scores=True)  # summary text won't be printed
+        _, _, scores = extract_summary(doc, ref, title, k, verbose, rouge_embed=rouge_embed, vectorize_scores=True)  # summary text won't be printed
         for key in scores.keys(): rouge_scores[key].append(scores[key])
     rouge_mean, rouge_median, rouge_std = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     for key in rouge_scores.keys():

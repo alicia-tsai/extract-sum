@@ -4,8 +4,7 @@ from __future__ import division, print_function, unicode_literals
 import six
 import itertools
 import numpy as np
-from utils import get_glove_dict
-
+import utils
 
 def _get_ngrams(n, text):
     """Calcualtes n-grams.
