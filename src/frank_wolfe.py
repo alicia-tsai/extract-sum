@@ -7,7 +7,7 @@ import scipy.sparse as sps
 try:
     import matlab.engine
     eng = matlab.engine.start_matlab()
-    eng.cd("SMRS_v1.0")
+    eng.cd("../SMRS_v1.0")
 except ImportError:
     print("Matlab not imported")
 
@@ -120,7 +120,7 @@ class Data_Reducer:
             og_idx = sorted_indices[idx]
             if horizontal_norms[og_idx] == 0.0:
                 last_index = idx
-                print("ALERT: less than num_exemp were selected")
+                #print("ALERT: less than num_exemp were selected")
                 break
 
         return sorted_indices[:last_index]
@@ -630,8 +630,8 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
             exemplar_indices = self.make_exemplar_indices(X.T, self.num_exemp)
         else:
             exemplar_indices = exemplar_index_lst
-            if len(exemplar_indices) < self.num_exemp:
-                print("here? ALERT: less than num_exemp were selected: " + str(len(exemplar_indices)))
+            #if len(exemplar_indices) < self.num_exemp:
+                #print("here? ALERT: less than num_exemp were selected: " + str(len(exemplar_indices)))
         self.timer.stop()
 
         if set_beta_to_None:
@@ -731,8 +731,8 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
             exemplar_indices = self.make_exemplar_indices(X_dense.T, self.num_exemp)
         else:
             exemplar_indices = exemplar_index_lst
-            if len(exemplar_indices) < self.num_exemp:
-                print("ALERT: less than num_exemp were selected: " + str(len(exemplar_indices)))
+            # if len(exemplar_indices) < self.num_exemp:
+            #     print("ALERT: less than num_exemp were selected: " + str(len(exemplar_indices)))
         self.timer.stop()
 
         # print("##########################", self.verbose)
