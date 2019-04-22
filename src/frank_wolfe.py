@@ -11,6 +11,8 @@ try:
 except ImportError:
     print("Matlab not imported")
 
+def convert_ndarray_to_matlab_mat(A):
+    return matlab.double(A.tolist(), A.shape)
 
 class Data_Reducer:
     '''

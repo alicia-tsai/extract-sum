@@ -4,6 +4,7 @@ from __future__ import division, print_function, unicode_literals
 import six
 import itertools
 import numpy as np
+import spacy
 import utils
 
 def _get_ngrams(n, text):
@@ -176,30 +177,82 @@ def rouge_n(evaluated_sentences, reference_sentences, n=2, embed=False, embed_di
 
 def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, reference_ngrams, embed_dict=None):
     if not embed_dict:
-        embed_dict = utils.get_glove_dict()
+        #embed_dict = utils.get_glove_dict()
+        nlp = spacy.load('en_core_web_lg')
 
     embed_score = 0
-    for eval, ref in zip(evaluated_ngrams, reference_ngrams):
-        eval_wv, ref_wv = None, None
-        for i in range(len(eval)):
-            if eval[i] in embed_dict:
-                if eval_wv is None:
-                    eval_wv = embed_dict[eval[i]]
+    # get word vector matrix for all evaluated ngrams
+    eval_wv_matrix = []
+    for eval in evaluated_ngrams:
+        eval_wv = None
+        for token in eval:
+            eval_token = nlp(token)
+            if eval_token.has_vector:
+                if (eval_wv is None) and (eval_token.vector_norm > 0):
+                    eval_wv = eval_token.vector / eval_token.vector_norm
                 else:
-                    eval_wv *= embed_dict[eval[i]]
+                    if eval_token.vector_norm > 0: eval_wv *= eval_token.vector / eval_token.vector_norm
+        if eval_wv is not None: eval_wv_matrix.append(eval_wv)
 
-            if ref[i] in embed_dict:
-                if ref_wv is None:
-                    ref_wv = embed_dict[ref[i]]
+    # get word vector matrix for all reference ngrams
+    ref_wv_matrix = []
+    for ref in reference_ngrams:
+        ref_wv = None
+        for token in ref:
+            ref_token = nlp(token)
+            if ref_token.has_vector:
+                if (ref_wv is None) and (ref_token.vector_norm > 0): # to avoid 0 division
+                    ref_wv = ref_token.vector / ref_token.vector_norm
                 else:
-                    ref_wv *= embed_dict[ref[i]]
-        if (eval_wv is not None) and (ref_wv is not None):
-            # normalzie word vectors
-            eval_wv /= np.linalg.norm(eval_wv)
-            ref_wv /= np.linalg.norm(ref_wv)
-            embed_score += (eval_wv.dot(ref_wv) + 1) / 2
+                    if ref_token.vector_norm > 0: ref_wv *= ref_token.vector / ref_token.vector_norm
+        if ref_wv is not None: ref_wv_matrix.append(ref_wv)
 
-    return f_r_p_rouge_n(evaluated_count, reference_count, embed_score)
+    # calculate maximum of each row of matrix product: maximum of the similarity score
+    similarity_matrix = np.dot(np.array(eval_wv_matrix), np.array(ref_wv_matrix).T)
+    eval_score = np.sum(np.max(similarity_matrix, axis=1))
+    ref_score = np.sum(np.max(similarity_matrix, axis=0))
+
+    # calculate metrics
+    precision = eval_score / evaluated_count
+    recall = ref_score / reference_count
+    f1_score = 2.0 * ((precision * recall) / (precision + recall + 1e-8))
+
+    return {"f": f1_score, "p": precision, "r": recall}
+
+    # for eval in evaluated_ngrams:
+    #     score = []
+    #     for i in range(len(eval)):
+    #         eval_token = nlp(eval[i])
+    #         max_score = -1  # maximum similarity
+    #         for ref in reference_ngrams:
+    #             ref_token = nlp(ref[i])
+    #             sim = eval_token.similarity(ref_token)
+    #             if sim > max_score: max_score = sim
+    #         score.append(max_score)
+    #     embed_score += (np.mean(score) + 1) / 2
+
+    # for eval, ref in zip(evaluated_ngrams, reference_ngrams):
+    #     eval_wv, ref_wv = None, None
+    #     for i in range(len(eval)):
+    #         eval_token, ref_token = nlp(eval[i]), nlp(ref[i])
+    #         if eval_token.has_vector:
+    #             if (eval_wv is None) and (eval_token.vector_norm > 0):
+    #                 eval_wv = eval_token.vector / eval_token.vector_norm
+    #             else:
+    #                 if eval_token.vector_norm > 0: eval_wv *= (eval_token.vector / eval_token.vector_norm)
+    #         if ref_token.has_vector:
+    #             if (ref_wv is None) and (ref_token.vector_norm > 0):
+    #                 ref_wv = ref_token.vector / ref_token.vector_norm
+    #             else:
+    #                 if ref_token.vector_norm > 0: ref_wv *= (ref_token.vector / ref_token.vector_norm)
+    #
+    #     # normalzie word vectors
+    #     if (eval_wv is not None) and (ref_wv is not None):
+    #     #     eval_wv /= np.linalg.norm(eval_wv)
+    #     #     ref_wv /= np.linalg.norm(ref_wv)
+    #         embed_score += (eval_wv.dot(ref_wv) + 1) / 2
+
+    #return f_r_p_rouge_n(len(eval_wv_matrix), len(ref_wv_matrix), embed_score)
 
 
 def f_r_p_rouge_n(evaluated_count, reference_count, overlapping_count):

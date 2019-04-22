@@ -2,6 +2,7 @@ import os
 import io
 import pandas as pd
 from collections import defaultdict
+import xml.etree.ElementTree as ET
 
 
 def get_nips_data():
@@ -28,13 +29,16 @@ def get_wiki_data():
     return wiki['title'].tolist(), wiki['headline'].tolist(), wiki['text'].tolist()
 
 
-def get_outlook_data():
-    citi = pd.read_csv('../data/2019-outlooks/citi.csv')
-    citi_title = citi['title'].apply(clean_text)
-    citi_reference = citi['reference'].apply(clean_text)
-    citi_text = citi['text'].str.lower().apply(clean_text)
+def get_outlook_data(name=None):
+    if name == 'citi':
+        data = pd.read_csv('../data/2019-outlooks/citi.csv')
+    else:
+        data = pd.read_csv('../data/2019-outlooks/cs.csv')
+    data_title = data['title'].apply(clean_text)
+    data_reference = data['reference'].apply(clean_text)
+    data_text = data['text'].str.lower().apply(clean_text)
 
-    return citi_title, citi_reference.tolist(), citi_text.tolist()
+    return data_title, data_reference.tolist(), data_text.tolist()
 
 
 def clean_text(text):
@@ -55,3 +59,51 @@ def get_bible_data():
             bible[text.split()[0]].append(' '.join(text.split()[2:]))
 
     return bible
+
+
+def correct_legal_case_xml():
+    path = "../data/legal-case/fulltext/"
+    all_files = os.listdir(path)
+    for file_name in all_files:
+        with open(path + file_name, 'r') as file:
+            lines = file.readlines()
+            for idx, line in enumerate(lines):
+                if line[:13] == "<catchphrase ":
+                    stop = 20 if line[20] == ">" else 21
+                    newline = line[:13] + 'id="' + line[17:stop-1] + line[stop-1:]
+                    lines[idx] = newline
+
+        with open(path + file_name, 'w') as file:
+            for line in lines:
+                file.write(line)
+
+
+def legal_case_xml2csv():
+    path = "../data/legal-case/fulltext/"
+    all_files = listdir(path)
+    titles, references, text = [], [], []
+    error = 0
+    for file_name in all_files:
+        try:
+            tree = ET.parse(path + file_name)
+            root = tree.getroot()
+            titles.append(root.find('name').text)
+
+            ref = '. '.join([phrase.text for phrase in root.findall('./catchphrases/catchphrase')])
+            references.append(ref)
+
+            sentences = '. '.join([phrase.text for phrase in root.findall('./sentences/sentence')]).replace('\n', '').replace("\'", '')
+            text.append(sentences)
+        except:
+            error += 1
+
+    print('# error document', error)
+    legal_case_data = pd.DataFrame({'reference': references, 'title': titles, 'text': text})
+    legal_case_data.to_csv('../data/legal-case/legal_case.csv', index=False, encoding='utf-8')
+
+    return legal_case_data
+
+
+def get_legal_case_data():
+    data = pd.read_csv('../data/legal-case/legal_case.csv')
+    return data['title'].tolist(), data['reference'].tolist(), data['text'].tolist()

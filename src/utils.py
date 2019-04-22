@@ -4,6 +4,8 @@ from collections import defaultdict
 import numpy as np
 from scipy import sparse
 from sklearn.feature_extraction.text import TfidfVectorizer
+import spacy
+
 from rouge_scores import Rouge
 
 
@@ -44,16 +46,22 @@ def get_glove_dict():
     return glove_dict
 
 
-def embed_sentence(doc, glove_dict):
+def embed_sentence(doc, word_vectors=None):
     """Return sentence embeddings (average word embeddings)."""
     corpus = split_sentence(doc)
+    if word_vectors is None:
+        nlp = spacy.load('en_core_web_lg')
+
     embeddings = None
     for sentence in corpus:
-        vector = [glove_dict[word] for word in sentence.split() if word in glove_dict]
+        #vector = [glove_dict[word] for word in sentence.split() if word in word_vectors]
+        tokens = nlp(sentence)
+        vector = [token.vector for token in tokens if token.has_vector]
         if embeddings is None:
             embeddings = np.mean(vector, axis=0)
         else:
-            if np.mean(vector, axis=0).shape != embeddings.shape:
+            #if np.mean(vector, axis=0).shape != embeddings.shape:
+            if len(vector) == 0:
                 continue  # skip if all words in the sentences are not in the embeddings
             embeddings = np.vstack((embeddings, np.mean(vector, axis=0)))
 
