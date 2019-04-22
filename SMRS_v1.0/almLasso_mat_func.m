@@ -1,6 +1,6 @@
 %--------------------------------------------------------------------------
-% This function takes a DxN matrix of N data points in a D-dimensional 
-% space and returns a NxN coefficient matrix of the sparse representation 
+% This function takes a DxN matrix of N data points in a D-dimensional
+% space and returns a NxN coefficient matrix of the sparse representation
 % of each data point in terms of the rest of the points
 % Y: DxN data matrix
 % affine: true if enforcing the affine constraint, false otherwise
@@ -17,7 +17,7 @@ function [C2,Err] = almLasso_mat_func(Y,affine,alpha,q,thr,maxIter,verbose)
 
 if (nargin < 2)
     % default subspaces are linear
-    affine = false; 
+    affine = false;
 end
 if (nargin < 3)
     % default regularizarion parameters
@@ -30,15 +30,15 @@ end
 if (nargin < 5)
     % default coefficient error threshold to stop ALM
     % default linear system error threshold to stop ALM
-    thr = 1*10^-7; 
+    thr = 1*10^-7;
 end
 if (nargin < 6)
     % default maximum number of iterations of ALM
-    maxIter = 5000; 
+    maxIter = 5000;
 end
 if (nargin < 7)
     % reporting iterations and errors
-    verbose = true; 
+    verbose = true;
 end
 
 
@@ -72,7 +72,7 @@ if (~affine)
     A = inv(mu1.*P+mu2.*eye(N));
     C1 = zeros(N,N);
     Lambda2 = zeros(N,N);
-    err1 = 10*thr1; 
+    err1 = 10*thr1;
     i = 1;
     % ALM iterations
     while ( err1 > thr1 && i < maxIter )
@@ -101,8 +101,8 @@ if (~affine)
     end
 else
     % initialization
-    mu1 = mu1p;
-    mu2 = mu2p;
+    mu1 = double(mu1p);  % add double to fix the error
+    mu2 = double(mu2p);
     P = Y'*Y;
     A = inv(mu1.*P+mu2.*eye(N)+mu2.*ones(N,N));
     C1 = zeros(N,N);
@@ -115,7 +115,7 @@ else
         % updating Z
         Z = A * (mu1.*P+mu2.*(C1-Lambda2./mu2)+mu2.*ones(N,N)+repmat(lambda3,N,1));
         % updating C
-        C2 = shrinkL1Lq(Z+Lambda2./mu2,1/mu2,q);  
+        C2 = shrinkL1Lq(Z+Lambda2./mu2,1/mu2,q);
         % updating Lagrange multipliers
         Lambda2 = Lambda2 + mu2 .* (Z - C2);
         lambda3 = lambda3 + mu2 .* (ones(1,N) - sum(Z,1));
