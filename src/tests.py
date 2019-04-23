@@ -19,6 +19,12 @@ class TestExtractSum(unittest.TestCase):
         self.assertTrue(num_titles > 0)
         self.assertTrue(num_titles == num_refs == num_docs)
 
+    def test_split_sentence(self):
+        sentences = utils.split_sentence(self.doc)
+        self.assertEqual(str, type(self.doc))
+        self.assertTrue(len(sentences) > 0)
+        self.assertEqual(str, type(sentences[0]))
+
 
 if __name__ == '__main__':
     unittest.main()
