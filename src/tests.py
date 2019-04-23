@@ -45,6 +45,15 @@ class TestExtractSum(unittest.TestCase):
                                     do_add_equality_constraint = True, num_exemp = 5, verbose = False)
         self.assertEqual(DR_Frank_Wolfe, type(summarizer))
 
+    def test_identify_examplar(self):
+        X = utils.vectorize_text(self.doc)
+        summarizer = DR_Frank_Wolfe(epsilon = 0, beta = 10, zeta = 0, positive = False,
+                                    greedy=True, order = 2, do_centering = False,
+                                    do_add_equality_constraint = True, num_exemp = 5, verbose = False)
+        exemplar_indices, _ = summarizer.identify_exemplars(X)
+        self.assertEqual(list, type(exemplar_indices))
+        self.assertTrue(len(exemplar_indices) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()
