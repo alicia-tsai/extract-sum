@@ -17,11 +17,21 @@ class TestExtractSum(unittest.TestCase):
         self.assertTrue(num_titles > 0)
         self.assertTrue(num_titles == num_refs == num_docs)
 
+    def test_split_sentence(self):
+        doc = self.docs[0]
+        sentences = utils.split_sentence(doc)
+
+        self.assertEqual(str, type(doc))
+        self.assertTrue(len(sentences) > 0)
+        self.assertEqual(str, type(sentences[0]))
+
     def test_get_tfidf_matrix(self):
         doc = self.docs[0]
         X = utils.vectorize_text(doc)
         self.assertEqual(scipy.sparse.csr.csr_matrix, type(X))
         self.assertTrue(scipy.sparse.linalg.norm(X) > 0)
+        self.assertTrue(X.shape[0] > 0)
+        self.assertTrue(X.shape[1] > 1)
 
 
 if __name__ == '__main__':
