@@ -25,6 +25,13 @@ class TestExtractSum(unittest.TestCase):
         self.assertTrue(len(sentences) > 0)
         self.assertEqual(str, type(sentences[0]))
 
+    def test_get_tfidf_matrix(self):
+        X = utils.vectorize_text(self.doc)
+        self.assertEqual(scipy.sparse.csr.csr_matrix, type(X))
+        self.assertTrue(scipy.sparse.linalg.norm(X) > 0)
+        self.assertTrue(X.shape[0] > 0)
+        self.assertTrue(X.shape[1] > 1)
+
 
 if __name__ == '__main__':
     unittest.main()
