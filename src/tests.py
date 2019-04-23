@@ -5,6 +5,7 @@ import scipy
 
 import data
 import utils
+from frank_wolfe import DR_Frank_Wolfe
 
 class TestExtractSum(unittest.TestCase):
 
@@ -37,6 +38,13 @@ class TestExtractSum(unittest.TestCase):
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(k)]
         summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
         self.assertEqual(str, type(summary))
+
+    def test_initialize_franke_wolfe_sparse_representation():
+        summarizer = DR_Frank_Wolfe(epsilon = 0, beta = 10, zeta = 0, positive = False,
+                                    greedy=True, order = 2, do_centering = False,
+                                    do_add_equality_constraint = True, num_exemp = k, verbose = False)
+        assertEqual(DR_Frank_Wolfe, type(summarizer))
+
 
 
 if __name__ == '__main__':
