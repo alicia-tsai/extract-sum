@@ -10,6 +10,8 @@ class TestExtractSum(unittest.TestCase):
         self.assertEqual(True, num_title > 0)
         self.assertEqual(True, num_title == num_ref == num_text)
 
+    def 
+
 
 if __name__ == '__main__':
     unittest.main()
