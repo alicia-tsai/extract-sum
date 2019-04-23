@@ -5,8 +5,11 @@ import utils
 class TestExtractSum(unittest.TestCase):
 
     def test_get_outlook_data(self):
-        outlook_data = data.get_outlook_data()
-        self.assertEqual(True, (len(outlook_data) > 0))
+        title, ref, text = data.get_outlook_data()
+        num_title, num_ref, num_text = len(title), len(ref), len(text)
+        self.assertEqual(True, num_title > 0)
+        self.assertEqual(True, num_title == num_ref == num_text)
+
 
 if __name__ == '__main__':
     unittest.main()
