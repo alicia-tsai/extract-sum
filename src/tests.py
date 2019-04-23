@@ -55,9 +55,8 @@ class TestExtractSum(unittest.TestCase):
         self.assertTrue(len(exemplar_indices) > 0)
 
     def test_embed_sentences(self):
-        embed = utils.embed_sentence(self.doc)
+        embed = utils.embed_sentence(self.doc, word_vectors='en_core_web_sm')
         self.assertTrue(np.linalg.norm(embed) > 0)
-
 
 if __name__ == '__main__':
     unittest.main()
