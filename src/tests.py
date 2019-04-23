@@ -58,5 +58,16 @@ class TestExtractSum(unittest.TestCase):
         embed = utils.embed_sentence(self.doc, word_vectors='en_core_web_sm')
         self.assertTrue(np.linalg.norm(embed) > 0)
 
+    def test_get_rouge_score(self):
+        X = utils.vectorize_text(self.doc)
+        random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(5)]
+        summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
+        scores = utils.get_rouge_score(summary, self.refs[0], verbose=False)
+        self.assertEqual(dict, type(scores))
+        self.assertTrue(len(scores.keys()) == 3)
+        for key in scores.keys():
+            self.assertEqual(dict, type(scores[key]))
+            self.assertTrue(len(scores[key].keys()) == 3)
+
 if __name__ == '__main__':
     unittest.main()
