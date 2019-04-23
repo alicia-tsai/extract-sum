@@ -54,6 +54,10 @@ class TestExtractSum(unittest.TestCase):
         self.assertEqual(list, type(exemplar_indices))
         self.assertTrue(len(exemplar_indices) > 0)
 
+    def test_embed_sentences(self):
+        embed = utils.embed_sentence(self.doc)
+        self.assertTrue(np.linalg.norm(embed) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()
