@@ -46,11 +46,10 @@ def get_glove_dict():
     return glove_dict
 
 
-def embed_sentence(doc, word_vectors=None):
+def embed_sentence(doc, word_vectors='en_core_web_lg'):
     """Return sentence embeddings (average word embeddings)."""
     corpus = split_sentence(doc)
-    if word_vectors is None:
-        nlp = spacy.load('en_core_web_lg')
+    nlp = spacy.load('en_core_web_lg')
 
     embeddings = None
     for sentence in corpus:
