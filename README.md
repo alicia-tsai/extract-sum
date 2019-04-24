@@ -7,8 +7,7 @@ Please see `notebooks/demo.ipynb` notebook for demo.
   - Install python 3.7
   - Install Matlab - [UC Berkeley licence ](https://www.mathworks.com/academia/tah-portal/berkeley-731130.html)
   - Install [matlab engine for python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html)
-  - pip install -r requirements.txt
-  - python -m spacy download en_core_web_lg
+  - Run `sh download.sh`
 
 ### Dataset
   - [NIPS conference papers](https://www.kaggle.com/benhamner/nips-papers#papers.csv)

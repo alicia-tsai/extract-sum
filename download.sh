@@ -1,4 +1,3 @@
-wget http://www.cs.toronto.edu/~rkiros/models/uni_skip.npz.pkl
-wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz
-wget http://www.cs.toronto.edu/~rkiros/models/bi_skip.npz.pkl
-wget http://www.cs.toronto.edu/~rkiros/models/btable.npy
+#!/bin/bash
+pip install -r requirements.txt
+python -m spacy download en_core_web_lg
