@@ -192,7 +192,9 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
                 if (eval_wv is None) and (eval_token.vector_norm > 0):
                     eval_wv = eval_token.vector / eval_token.vector_norm
                 else:
-                    if eval_token.vector_norm > 0: eval_wv *= eval_token.vector / eval_token.vector_norm
+                    if eval_token.vector_norm > 0:
+                        eval_wv += eval_token.vector / eval_token.vector_norm
+                        eval_wv /= np.linalg.norm(eval_wv)
         if eval_wv is not None: eval_wv_matrix.append(eval_wv)
 
     # get word vector matrix for all reference ngrams
@@ -205,7 +207,9 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
                 if (ref_wv is None) and (ref_token.vector_norm > 0): # to avoid 0 division
                     ref_wv = ref_token.vector / ref_token.vector_norm
                 else:
-                    if ref_token.vector_norm > 0: ref_wv *= ref_token.vector / ref_token.vector_norm
+                    if ref_token.vector_norm > 0:
+                        ref_wv += ref_token.vector / ref_token.vector_norm
+                        ref_wv /= np.linalg.norm(ref_wv)
         if ref_wv is not None: ref_wv_matrix.append(ref_wv)
 
     # calculate maximum of each row of matrix product: maximum of the similarity score
