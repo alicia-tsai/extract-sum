@@ -14,11 +14,6 @@ class TestExtractSum(unittest.TestCase):
         self.titles, self.refs, self.docs = data.get_newsroom_data()
         self.doc = self.docs[0]
 
-    def test_get_news_data(self):
-        num_titles, num_refs, num_docs = len(self.titles), len(self.refs), len(self.docs)
-        self.assertTrue(num_titles > 0)
-        self.assertTrue(num_titles == num_refs == num_docs)
-
     def test_split_sentence(self):
         sentences = utils.split_sentence(self.doc)
         self.assertEqual(str, type(self.doc))
@@ -63,19 +58,6 @@ class TestExtractSum(unittest.TestCase):
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(5)]
         summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
         scores = utils.get_rouge_score(summary, self.refs[0], verbose=False)
-        self.assertEqual(dict, type(scores))
-        self.assertTrue(len(scores.keys()) == 3)
-        for key in scores.keys():
-            self.assertEqual(dict, type(scores[key]))
-            self.assertTrue(len(scores[key].keys()) == 3)
-            for subkey in scores[key].keys():
-                self.assertTrue(scores[key][subkey] >= 0)
-
-    def test_get_word_embedding_rouge_score(self):
-        X = utils.vectorize_text(self.doc)
-        random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(5)]
-        summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
-        scores = utils.get_rouge_score(summary, self.refs[0], verbose=False, rouge_embed=True)
         self.assertEqual(dict, type(scores))
         self.assertTrue(len(scores.keys()) == 3)
         for key in scores.keys():
