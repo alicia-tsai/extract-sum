@@ -1,5 +1,6 @@
 import os
 import io
+import json
 import pandas as pd
 from collections import defaultdict
 import xml.etree.ElementTree as ET
@@ -42,9 +43,12 @@ def get_outlook_data(name=None):
 
 
 def clean_text(text):
+    text = text.lower()
+    text = text.replace('\n', ' ')
     text = text.replace('\xe2\x80\x93', '-')
     text = text.replace('\xe2\x80\x99', "'")
     text = text.replace('\xe2\x80\x98', "''")
+    text = text.replace('\x97', '')
 
     return text
 
@@ -106,4 +110,32 @@ def legal_case_xml2csv():
 
 def get_legal_case_data():
     data = pd.read_csv('../data/legal-case/legal_case.csv')
+    return data['title'].tolist(), data['reference'].tolist(), data['text'].tolist()
+
+
+def newsroom_json2csv():
+    datastore = []
+    with open('../data/newsroom/dev.jsonl', encoding='utf-8') as file:
+        for f in file:
+            data = json.loads(f)
+            if (data['density_bin'] == 'extractive') and (len(data['summary'].split('. ')) >= 5):
+                datastore.append(data)
+
+    titles, references, text = [], [], []
+    for data in datastore:
+        titles.append(data['title'])
+        references.append(data['summary'])
+        text.append(data['text'])
+
+    data = pd.DataFrame()
+    data['title'] = titles
+    data['reference'] = references
+    data['text'] = text
+    data.to_csv('../data/newsroom/news_dev.csv', index=False, encoding='utf-8')
+
+
+def get_newsroom_data():
+    data = pd.read_csv('../data/newsroom/news_dev.csv')
+    #data['reference'] = data['reference'].apply(clean_text)
+    data['text'] = data['text'].apply(clean_text)
     return data['title'].tolist(), data['reference'].tolist(), data['text'].tolist()
