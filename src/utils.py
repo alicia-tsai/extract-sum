@@ -90,3 +90,22 @@ def get_rouge_score(summary, reference, verbose=True, vectorize=False, rouge_emb
         # return scores in a vector
         return np.array([v for name in scores.values() for v in name.values()])
     return scores
+
+
+def start_matlab_engine():
+    """Enable matlab engine."""
+    try:
+        import matlab.engine
+        eng = matlab.engine.start_matlab()
+        eng.cd("../SMRS_v1.0")
+        return eng
+    except ImportError:
+        print("Matlab not imported")
+
+
+def convert_ndarray_to_matlab_mat(A):
+    try:
+        import matlab.engine
+        return matlab.double(A.toarray().tolist(), A.shape)
+    except ImportError:
+        print("Matlab not imported")
