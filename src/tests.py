@@ -11,10 +11,10 @@ class TestExtractSum(unittest.TestCase):
 
     def setUp(self):
         """Set up data for the project."""
-        self.titles, self.refs, self.docs = data.get_outlook_data()
+        self.titles, self.refs, self.docs = data.get_newsroom_data()
         self.doc = self.docs[0]
 
-    def test_get_outlook_data(self):
+    def test_get_news_data(self):
         num_titles, num_refs, num_docs = len(self.titles), len(self.refs), len(self.docs)
         self.assertTrue(num_titles > 0)
         self.assertTrue(num_titles == num_refs == num_docs)
