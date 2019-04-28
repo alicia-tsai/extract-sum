@@ -32,6 +32,13 @@ class TestExtractSum(unittest.TestCase):
         self.assertTrue(X.shape[0] > 0)
         self.assertTrue(X.shape[1] > 1)
 
+    def test_get_summary(self):
+        k = 5
+        X = utils.vectorize_text(self.doc)
+        random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(k)]
+        summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
+        self.assertEqual(str, type(summary))
+
 
 if __name__ == '__main__':
     unittest.main()
