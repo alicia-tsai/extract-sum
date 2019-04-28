@@ -84,6 +84,11 @@ class TestExtractSum(unittest.TestCase):
             for subkey in scores[key].keys():
                 self.assertTrue(scores[key][subkey] >= 0)
 
+    def test_start_matlab_engine(self):
+        import matlab
+        eng = utils.start_matlab_engine()
+        self.assertEqual(matlab.engine.matlabengine.MatlabEngine, type(eng))
+
 
 if __name__ == '__main__':
     unittest.main()
