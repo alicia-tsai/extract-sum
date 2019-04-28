@@ -15,13 +15,17 @@ def start_matlab_engine():
         import matlab.engine
         eng = matlab.engine.start_matlab()
         eng.cd("../SMRS_v1.0")
+        return eng
     except ImportError:
         print("Matlab not imported")
 
 
 def convert_ndarray_to_matlab_mat(A):
-    #print(type(A))
-    return matlab.double(A.toarray().tolist(), A.shape)
+    try:
+        import matlab.engine
+        return matlab.double(A.toarray().tolist(), A.shape)
+    except ImportError:
+        print("Matlab not imported")
 
 
 def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_rouge=False, print_rouge=True,
@@ -50,7 +54,7 @@ def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_
 
     if 'SMRS' in methods:
         if print_summary: print('\n========== Extracted summary: SMRS ==========')
-        start_matlab_engine()
+        eng = start_matlab_engine()
         start = time.time()
         SMRS_exemplar_indices = np.asarray(eng.smrs(convert_ndarray_to_matlab_mat(X.T), 5, 0, True)[0])
         SMRS_exemplar_indices = [int(x)-1 for x in SMRS_exemplar_indices][:k]
