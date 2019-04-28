@@ -176,8 +176,9 @@ def rouge_n(evaluated_sentences, reference_sentences, n=2, embed=False, embed_di
 
 
 def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, reference_ngrams, embed_dict=None):
-    if not embed_dict:
-        #embed_dict = utils.get_glove_dict()
+    if embed_dict:
+        nlp = spacy.load(embed_dict)
+    else:
         nlp = spacy.load('en_core_web_lg')
 
     embed_score = 0
