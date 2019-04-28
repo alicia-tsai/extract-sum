@@ -65,6 +65,12 @@ class TestExtractSum(unittest.TestCase):
             for subkey in scores[key].keys():
                 self.assertTrue(scores[key][subkey] >= 0)
 
+    def test_rouge_score_implementation(self):
+        scores = utils.get_rouge_score(self.refs[0], self.refs[0], verbose=False)
+        for key in scores.keys():
+            for subkey in scores[key].keys():
+                self.assertTrue(scores[key][subkey] >= 0.99)
+
 
 if __name__ == '__main__':
     unittest.main()
