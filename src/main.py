@@ -37,7 +37,7 @@ def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_
         if print_summary: print('\n========== Extracted summary: SMRS ==========')
         eng = utils.start_matlab_engine()
         start = time.time()
-        SMRS_exemplar_indices = np.asarray(eng.smrs(utils.convert_ndarray_to_matlab_mat(X.T), 5, 0, True)[0])
+        SMRS_exemplar_indices = np.asarray(eng.smrs(utils.convert_csr_matrix_to_matlab_mat(X.T), 5, 0, True)[0])
         SMRS_exemplar_indices = [int(x)-1 for x in SMRS_exemplar_indices][:k]
         summary['SMRS'] = utils.get_summary(doc, SMRS_exemplar_indices, print_summary)
         runtime['SMRS'] = time.time() - start

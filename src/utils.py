@@ -103,7 +103,7 @@ def start_matlab_engine():
         print("Matlab not imported")
 
 
-def convert_ndarray_to_matlab_mat(A):
+def convert_csr_matrix_to_matlab_mat(A):
     try:
         import matlab.engine
         return matlab.double(A.toarray().tolist(), A.shape)
