@@ -75,7 +75,7 @@ class TestExtractSum(unittest.TestCase):
         X = utils.vectorize_text(self.doc)
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(5)]
         summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
-        scores = utils.get_rouge_score(summary, self.refs[0], verbose=False, rouge_embed=True)
+        scores = utils.get_rouge_score(summary, self.refs[0], verbose=False, rouge_embed=True, embed_dict='en_core_web_sm')
         self.assertEqual(dict, type(scores))
         self.assertTrue(len(scores.keys()) == 3)
         for key in scores.keys():
