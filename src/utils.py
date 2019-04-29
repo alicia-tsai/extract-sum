@@ -30,10 +30,15 @@ def vectorize_text(doc):
 
 def get_summary(doc, exemplar_indices, verbose=True):
     corpus = split_sentence(doc)
-    summary = '. '.join([corpus[idx].capitalize() for idx in exemplar_indices])
-    if verbose: print(summary)
+    sentences = [corpus[idx].capitalize() for idx in exemplar_indices]
+    word_count = np.sum([len(sen.split()) for sen in sentences])
+    summary = '. '.join(sentences)
+    if verbose:
+        print(summary)
+        print('-' * 5)
+        print('Word count:' + str(word_count))
 
-    return summary
+    return summary, word_count
 
 
 def get_glove_dict():

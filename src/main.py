@@ -19,18 +19,19 @@ def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_
     if print_summary and title: print('\nTitle: ' + title + '\n')
     if print_summary and ref:
         print('=============== Referecne Text ==============')
-        print(ref)
+        print(ref + '\n' + '-' * 5)
+        print('Word count:' + str(len(ref.split())))
 
     summarizer = DR_Frank_Wolfe(epsilon = 0, beta = 10, zeta = 0, positive = False,
                                 greedy=True, order = 2, do_centering = False,
                                 do_add_equality_constraint = True, num_exemp = k, verbose = True)
-    summary, runtime = {}, {}
+    summary, word_count, runtime = {}, {}, {}
     if 'random' in methods:
         if print_summary: print('\n========== Extracted summary: random selection ==========')
         start = time.time()
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(k)]
-        summary['random'] = utils.get_summary(doc, random_exemplar_indices, print_summary)
         runtime['random'] = time.time() - start
+        summary['random'], word_count['random'] = utils.get_summary(doc, random_exemplar_indices, print_summary)
         if print_summary: print('Random selection computation time: %.3f' %(runtime['random']))
 
     if 'SMRS' in methods:
@@ -38,17 +39,17 @@ def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_
         eng = utils.start_matlab_engine()
         start = time.time()
         SMRS_exemplar_indices = np.asarray(eng.smrs(utils.convert_csr_matrix_to_matlab_mat(X.T), 5, 0, True)[0])
-        SMRS_exemplar_indices = [int(x)-1 for x in SMRS_exemplar_indices][:k]
-        summary['SMRS'] = utils.get_summary(doc, SMRS_exemplar_indices, print_summary)
         runtime['SMRS'] = time.time() - start
+        SMRS_exemplar_indices = [int(x)-1 for x in SMRS_exemplar_indices][:k]
+        summary['SMRS'], word_count['SMRS'] = utils.get_summary(doc, SMRS_exemplar_indices, print_summary)
         if print_summary: print('SMRS computation time: %.3f' %(runtime['SMRS']))
 
     if 'tfidf' in methods:
         if print_summary: print('\n========== Extracted summary: Tfidf ==========')
         start = time.time()
         tfidf_exemplar_indices, _ = summarizer.identify_exemplars(X)
-        summary['tfidf'] = utils.get_summary(doc, tfidf_exemplar_indices, print_summary)
         runtime['tfidf'] = time.time() - start
+        summary['tfidf'], word_count['tfidf'] = utils.get_summary(doc, tfidf_exemplar_indices, print_summary)
         if print_summary: print('Tfidf computation time: %.3f' %(runtime['tfidf']))
 
     if 'embed' in methods:
@@ -59,8 +60,8 @@ def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_
         #if print_summary: print('Sentence embedding shape: (%d, %d)' %(embed.shape[0], embed.shape[1]))
         start = time.time()
         embed_exemplar_indices, _ = summarizer.identify_exemplars(embed)
-        summary['embed'] = utils.get_summary(doc, embed_exemplar_indices, print_summary)
         runtime['embed'] = time.time() - start
+        summary['embed'], word_count['embed'] = utils.get_summary(doc, embed_exemplar_indices, print_summary)
         if print_summary: print('Sentence embedding computation time: %.3f' %(runtime['embed']))
 
     # Report ROUGE scores
@@ -74,20 +75,21 @@ def extract_summary(doc, ref=None, title=None, k=5, print_summary=False, report_
             else:
                 scores[method] = utils.get_rouge_score(summary[method], ref, print_rouge, vectorize_scores)
 
-        return summary, runtime, scores
+        return summary, word_count, runtime, scores
 
-    return summary, runtime
+    return summary, word_count, runtime
 
 
 def report_rouge_scores(docs, refs, titles=None, k=5, rouge_embed=False, methods=['random', 'SMRS', 'tfidf', 'embed']):
     rouge_scores = defaultdict(list) # dictionary to store all rouge scores
     for doc, ref, title in zip(docs, refs, titles):
-        _, _, scores = extract_summary(doc, ref, title, k, print_summary=False, report_rouge=True, print_rouge=False,
+        summary, word_count, runtime, scores = extract_summary(doc, ref, title, k, print_summary=False, report_rouge=True, print_rouge=False,
                                         rouge_embed=rouge_embed, vectorize_scores=True, methods=methods)  # summary text won't be printed
-        for key in scores.keys(): rouge_scores[key].append(scores[key])
+        for method in scores.keys():
+            rouge_scores[method].append(np.hstack([scores[method], runtime[method], word_count[method]]))
     rouge_mean, rouge_median, rouge_std = pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
-    for key in rouge_scores.keys():
-        rouge_mean[key] = np.mean(rouge_scores[key], axis=0)
-        rouge_median[key] = np.median(rouge_scores[key], axis=0)
-        rouge_std[key] = np.std(rouge_scores[key], axis=0)
+    for method in rouge_scores.keys():
+        rouge_mean[method] = np.mean(rouge_scores[method], axis=0)
+        rouge_median[method] = np.median(rouge_scores[method], axis=0)
+        rouge_std[method] = np.std(rouge_scores[method], axis=0)
     return rouge_mean, rouge_median, rouge_std
