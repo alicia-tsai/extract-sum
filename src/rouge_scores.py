@@ -181,7 +181,6 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
     else:
         nlp = spacy.load('en_core_web_lg')
 
-    embed_score = 0
     # get word vector matrix for all evaluated ngrams
     eval_wv_matrix = []
     for eval in evaluated_ngrams:
@@ -212,7 +211,7 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
                         ref_wv /= np.linalg.norm(ref_wv)
         if ref_wv is not None: ref_wv_matrix.append(ref_wv)
 
-    # calculate maximum of each row of matrix product: maximum of the similarity score
+    # calculate maximum of the similarity score
     similarity_matrix = np.dot(np.array(eval_wv_matrix), np.array(ref_wv_matrix).T)
     eval_score = np.sum(np.max(similarity_matrix, axis=1))
     ref_score = np.sum(np.max(similarity_matrix, axis=0))
@@ -223,41 +222,6 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
     f1_score = 2.0 * ((precision * recall) / (precision + recall + 1e-8))
 
     return {"f": f1_score, "p": precision, "r": recall}
-
-    # for eval in evaluated_ngrams:
-    #     score = []
-    #     for i in range(len(eval)):
-    #         eval_token = nlp(eval[i])
-    #         max_score = -1  # maximum similarity
-    #         for ref in reference_ngrams:
-    #             ref_token = nlp(ref[i])
-    #             sim = eval_token.similarity(ref_token)
-    #             if sim > max_score: max_score = sim
-    #         score.append(max_score)
-    #     embed_score += (np.mean(score) + 1) / 2
-
-    # for eval, ref in zip(evaluated_ngrams, reference_ngrams):
-    #     eval_wv, ref_wv = None, None
-    #     for i in range(len(eval)):
-    #         eval_token, ref_token = nlp(eval[i]), nlp(ref[i])
-    #         if eval_token.has_vector:
-    #             if (eval_wv is None) and (eval_token.vector_norm > 0):
-    #                 eval_wv = eval_token.vector / eval_token.vector_norm
-    #             else:
-    #                 if eval_token.vector_norm > 0: eval_wv *= (eval_token.vector / eval_token.vector_norm)
-    #         if ref_token.has_vector:
-    #             if (ref_wv is None) and (ref_token.vector_norm > 0):
-    #                 ref_wv = ref_token.vector / ref_token.vector_norm
-    #             else:
-    #                 if ref_token.vector_norm > 0: ref_wv *= (ref_token.vector / ref_token.vector_norm)
-    #
-    #     # normalzie word vectors
-    #     if (eval_wv is not None) and (ref_wv is not None):
-    #     #     eval_wv /= np.linalg.norm(eval_wv)
-    #     #     ref_wv /= np.linalg.norm(ref_wv)
-    #         embed_score += (eval_wv.dot(ref_wv) + 1) / 2
-
-    #return f_r_p_rouge_n(len(eval_wv_matrix), len(ref_wv_matrix), embed_score)
 
 
 def f_r_p_rouge_n(evaluated_count, reference_count, overlapping_count):
@@ -317,6 +281,35 @@ def _union_lcs(evaluated_sentences, reference_sentence, prev_union=None, embed=F
     return new_lcs_count, lcs_union
 
 
+def _union_lcs_embed(evaluated_sentences, reference_sentences, embed_dict):
+    if embed_dict:
+        nlp = spacy.load(embed_dict)
+    else:
+        nlp = spacy.load('en_core_web_lg')
+
+    reference_words = set(_split_into_words(reference_sentences))
+    evaluated_words = set(_split_into_words(evaluated_sentences))
+
+    # get word vector matrix for all evaluated words
+    eval_wv_matrix = []
+    for eval in evaluated_words:
+        eval_token = nlp(eval)
+        if (eval_token.has_vector) and (eval_token.vector_norm > 0):
+            eval_wv_matrix.append(eval_token.vector / eval_token.vector_norm)
+
+    # get word vector matrix for all referene words
+    ref_wv_matrix = []
+    for ref in reference_words:
+        ref_token = nlp(ref)
+        if (ref_token.has_vector) and (ref_token.vector_norm > 0):
+            ref_wv_matrix.append(ref_token.vector / ref_token.vector_norm)
+
+    # calculate maximum of the similarity score
+    similarity_matrix = np.dot(np.array(eval_wv_matrix), np.array(ref_wv_matrix).T)
+    lcs_count = np.sum(np.max(similarity_matrix, axis=0))
+    return lcs_count
+
+
 def rouge_l_summary_level(evaluated_sentences, reference_sentences, embed=False, embed_dict=None):
     """
     Computes ROUGE-L (summary level) of two text collections of sentences.
@@ -353,13 +346,14 @@ def rouge_l_summary_level(evaluated_sentences, reference_sentences, embed=False,
     # print("m,n %d %d" % (m, n))
     union_lcs_sum_across_all_references = 0
     union = set()
-    for ref_s in reference_sentences:
-        lcs_count, union = _union_lcs(evaluated_sentences,
-                                      ref_s,
-                                      prev_union=union)
-        union_lcs_sum_across_all_references += lcs_count
+    if embed:
+        llcs = _union_lcs_embed(evaluated_sentences, reference_sentences, embed_dict)
+    else:
+        for ref_s in reference_sentences:
+            lcs_count, union = _union_lcs(evaluated_sentences, ref_s, prev_union=union)
+            union_lcs_sum_across_all_references += lcs_count
+        llcs = union_lcs_sum_across_all_references
 
-    llcs = union_lcs_sum_across_all_references
     r_lcs = llcs / m
     p_lcs = llcs / n
     beta = p_lcs / (r_lcs + 1e-12)
@@ -367,7 +361,6 @@ def rouge_l_summary_level(evaluated_sentences, reference_sentences, embed=False,
     denom = r_lcs + ((beta**2) * p_lcs)
     f_lcs = num / (denom + 1e-12)
     return {"f": f_lcs, "p": p_lcs, "r": r_lcs}
-
 
 class Rouge:
     DEFAULT_METRICS = ["rouge-1", "rouge-2", "rouge-l"]

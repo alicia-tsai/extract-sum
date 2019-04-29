@@ -90,6 +90,4 @@ def report_rouge_scores(docs, refs, titles=None, k=5, rouge_embed=False, methods
         rouge_mean[key] = np.mean(rouge_scores[key], axis=0)
         rouge_median[key] = np.median(rouge_scores[key], axis=0)
         rouge_std[key] = np.std(rouge_scores[key], axis=0)
-    if rouge_embed:
-        return rouge_mean[:-3], rouge_median[:-3], rouge_std[:-3]
     return rouge_mean, rouge_median, rouge_std

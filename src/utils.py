@@ -82,10 +82,9 @@ def get_rouge_score(summary, reference, verbose=True, vectorize=False, rouge_emb
         print('Overlap bi-gram \t\tPrecision: %.3f' %(scores['rouge-2']['p']))
         print('Overlap bi-gram \t\tRecall: %.3f' %(scores['rouge-2']['r']))
 
-        if not rouge_embed:  # LCS embed not implemented
-            print('Longest Common Subsequence \tF1: %.3f' %(scores['rouge-l']['f']))
-            print('Longest Common Subsequence \tPrecision: %.3f' %(scores['rouge-l']['p']))
-            print('Longest Common Subsequence \tRecall: %.3f' %(scores['rouge-l']['r']))
+        print('Longest Common Subsequence \tF1: %.3f' %(scores['rouge-l']['f']))
+        print('Longest Common Subsequence \tPrecision: %.3f' %(scores['rouge-l']['p']))
+        print('Longest Common Subsequence \tRecall: %.3f' %(scores['rouge-l']['r']))
     if vectorize:
         # return scores in a vector
         return np.array([v for name in scores.values() for v in name.values()])
