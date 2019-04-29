@@ -36,8 +36,9 @@ class TestExtractSum(unittest.TestCase):
         k = 5
         X = utils.vectorize_text(self.doc)
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(k)]
-        summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
+        summary, word_count = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
         self.assertEqual(str, type(summary))
+        self.assertTrue(word_count > 0)
 
     def test_identify_examplar(self):
         X = utils.vectorize_text(self.doc)
@@ -55,7 +56,7 @@ class TestExtractSum(unittest.TestCase):
     def test_get_rouge_score(self):
         X = utils.vectorize_text(self.doc)
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(5)]
-        summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
+        summary, word_count = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
         scores = utils.get_rouge_score(summary, self.refs[0], verbose=False)
         self.assertEqual(dict, type(scores))
         self.assertTrue(len(scores.keys()) == 3)
@@ -74,7 +75,7 @@ class TestExtractSum(unittest.TestCase):
     def test_get_word_embedding_rouge_score(self):
         X = utils.vectorize_text(self.doc)
         random_exemplar_indices = [np.random.randint(X.shape[0]) for _ in range(5)]
-        summary = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
+        summary, word_count = utils.get_summary(self.doc, random_exemplar_indices, verbose=False)
         scores = utils.get_rouge_score(summary, self.refs[0], verbose=False, rouge_embed=True, embed_dict='en_core_web_sm')
         self.assertEqual(dict, type(scores))
         self.assertTrue(len(scores.keys()) == 3)
