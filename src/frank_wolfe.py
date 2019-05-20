@@ -391,7 +391,10 @@ class DR_SMRS_Coordinate_Descent(Data_Reducer):
 
 
 class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
-    def __init__(self, init_proportion = None, linear = False, reweight = False, do_scale = False, epsilon = 0, credit = False, alpha = None, beta = None, zeta = 1, positive =False, greedy = True, order = 2, gamma = None, do_rbf_kernel = False, do_split_by_classes = True, do_centering = True, do_add_equality_constraint = False, term_thres = 1e-8, exemp_thres = 0.01, num_exemp = 100, max_iterations=10000, do_SAFE = False, verbose=True, decimate = None, **my_params):
+    def __init__(self, init_proportion = None, linear = False, reweight = False, do_scale = False, epsilon = 0, credit = False,
+    alpha = None, beta = None, zeta = 1, positive =False, greedy = True, order = 2, gamma = None, do_rbf_kernel = False, 
+    do_split_by_classes = True, do_centering = True, do_add_equality_constraint = False, term_thres = 1e-8, exemp_thres = 0.01,
+    num_exemp = 100, max_iterations=10000, do_SAFE = False, verbose=True, decimate = None, **my_params):
         self.alpha = alpha
         self.beta = beta
 

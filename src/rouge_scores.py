@@ -5,6 +5,8 @@ import six
 import itertools
 import numpy as np
 import spacy
+from nltk.corpus import stopwords
+
 import utils
 
 def _get_ngrams(n, text):
@@ -157,9 +159,11 @@ def rouge_n(evaluated_sentences, reference_sentences, n=2, embed=False, embed_di
     Raises:
       ValueError: raises exception if a param has len <= 0
     """
-    if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
-        raise ValueError("Collections must contain at least 1 sentence.")
+    if len(reference_sentences) <= 0:
+        raise ValueError("Reference must contain at least 1 sentence.")
 
+    if len(evaluated_sentences) <= 0:
+        return {"f": 0, "p": 0, "r": 0}
     evaluated_ngrams = _get_word_ngrams(n, evaluated_sentences)
     reference_ngrams = _get_word_ngrams(n, reference_sentences)
     reference_count = len(reference_ngrams)
@@ -180,12 +184,15 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
         nlp = spacy.load(embed_dict)
     else:
         nlp = spacy.load('en_core_web_lg')
+    stop_words = stopwords.words('english')
 
     # get word vector matrix for all evaluated ngrams
     eval_wv_matrix = []
     for eval in evaluated_ngrams:
         eval_wv = None
         for token in eval:
+            if token in stop_words:
+                continue
             eval_token = nlp(token)
             if eval_token.has_vector:
                 if (eval_wv is None) and (eval_token.vector_norm > 0):
@@ -201,6 +208,8 @@ def f_r_p_rouge_n_embed(evaluated_count, reference_count, evaluated_ngrams, refe
     for ref in reference_ngrams:
         ref_wv = None
         for token in ref:
+            if token in stop_words:
+                continue
             ref_token = nlp(token)
             if ref_token.has_vector:
                 if (ref_wv is None) and (ref_token.vector_norm > 0): # to avoid 0 division
@@ -264,7 +273,7 @@ def _union_lcs(evaluated_sentences, reference_sentence, prev_union=None, embed=F
         prev_union = set()
 
     if len(evaluated_sentences) <= 0:
-        raise ValueError("Collections must contain at least 1 sentence.")
+        return {"f": 0, "p": 0, "r": 0}
 
     lcs_union = prev_union
     prev_count = len(prev_union)
@@ -286,6 +295,7 @@ def _union_lcs_embed(evaluated_sentences, reference_sentences, embed_dict):
         nlp = spacy.load(embed_dict)
     else:
         nlp = spacy.load('en_core_web_lg')
+    stop_words = stopwords.words('english')
 
     reference_words = set(_split_into_words(reference_sentences))
     evaluated_words = set(_split_into_words(evaluated_sentences))
@@ -293,6 +303,8 @@ def _union_lcs_embed(evaluated_sentences, reference_sentences, embed_dict):
     # get word vector matrix for all evaluated words
     eval_wv_matrix = []
     for eval in evaluated_words:
+        if eval in stop_words:
+            continue
         eval_token = nlp(eval)
         if (eval_token.has_vector) and (eval_token.vector_norm > 0):
             eval_wv_matrix.append(eval_token.vector / eval_token.vector_norm)
@@ -300,6 +312,8 @@ def _union_lcs_embed(evaluated_sentences, reference_sentences, embed_dict):
     # get word vector matrix for all referene words
     ref_wv_matrix = []
     for ref in reference_words:
+        if ref in stop_words:
+            continue
         ref_token = nlp(ref)
         if (ref_token.has_vector) and (ref_token.vector_norm > 0):
             ref_wv_matrix.append(ref_token.vector / ref_token.vector_norm)
@@ -334,8 +348,11 @@ def rouge_l_summary_level(evaluated_sentences, reference_sentences, embed=False,
     Raises:
       ValueError: raises exception if a param has len <= 0
     """
-    if len(evaluated_sentences) <= 0 or len(reference_sentences) <= 0:
-        raise ValueError("Collections must contain at least 1 sentence.")
+    if len(reference_sentences) <= 0:
+        raise ValueError("Reference must contain at least 1 sentence.")
+
+    if len(evaluated_sentences) <= 0:
+        return {"f": 0, "p": 0, "r": 0}
 
     # total number of words in reference sentences
     m = len(set(_split_into_words(reference_sentences)))
@@ -360,6 +377,7 @@ def rouge_l_summary_level(evaluated_sentences, reference_sentences, embed=False,
     num = (1 + (beta**2)) * r_lcs * p_lcs
     denom = r_lcs + ((beta**2) * p_lcs)
     f_lcs = num / (denom + 1e-12)
+    #2.0 * ((precision * recall) / (precision + recall + 1e-8))
     return {"f": f_lcs, "p": p_lcs, "r": r_lcs}
 
 class Rouge:

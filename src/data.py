@@ -5,8 +5,10 @@ import pandas as pd
 from collections import defaultdict
 import xml.etree.ElementTree as ET
 
+import utils
 
-def get_nips_data():
+
+def get_nips_data(num=-1):
     """Return a list of abstract and a list of paper content from NIPS conference."""
     path = '../data/nips-papers'
     papers = pd.read_csv(os.path.join(path, 'papers.csv'))
@@ -17,29 +19,36 @@ def get_nips_data():
     paper_abstract = papers[mask]['abstract'].tolist()
     paper_text = papers[mask]['paper_text'].tolist()  # content of paper with abstract
 
-    return paper_title, paper_abstract, paper_text
+    return paper_title[:num], paper_abstract[:num], paper_text[:num]
 
 
-def get_wiki_data():
+def get_wiki_data(num=-1):
     """Return a list of summary and a list of WikiHow article."""
     path = '../data'
     wiki = pd.read_csv(os.path.join(path, 'wikihowAll.csv'))
-    wiki['headline'] = wiki['headline'].str.replace('\n', ' ')
+    wiki['headline'] = wiki['headline'].str.replace('\n', ' ').str.replace(',', '')
     wiki['text'] = wiki['text'].str.replace('\n', ' ')
 
-    return wiki['title'].tolist(), wiki['headline'].tolist(), wiki['text'].tolist()
+    return wiki['title'].tolist()[:num], wiki['headline'].tolist()[:num], wiki['text'].tolist()[:num]
 
 
-def get_outlook_data(name=None):
+def get_outlook_data(name=None, num=None):
     if name == 'citi':
         data = pd.read_csv('../data/2019-outlooks/citi.csv')
-    else:
+    elif name == 'cs':
         data = pd.read_csv('../data/2019-outlooks/cs.csv')
-    data_title = data['title'].apply(clean_text)
-    data_reference = data['reference'].apply(clean_text)
-    data_text = data['text'].str.lower().apply(clean_text)
+    elif name == 'rbc':
+        data = pd.read_csv('../data/2019-outlooks/rbc.csv')
+    else:
+        data1 = pd.read_csv('../data/2019-outlooks/citi.csv')
+        data2 = pd.read_csv('../data/2019-outlooks/cs.csv')
+        data3 = pd.read_csv('../data/2019-outlooks/rbc.csv')
+        data = pd.concat([data1, data2, data3], sort=False, ignore_index=True)
+        if num:
+            data = data.sample(n=num)
+        data['text'] = data['text'].apply(clean_text)
 
-    return data_title, data_reference.tolist(), data_text.tolist()
+    return data['title'].tolist(), data['reference'].tolist(), data['text'].tolist()
 
 
 def clean_text(text):
@@ -110,6 +119,8 @@ def legal_case_xml2csv():
 
 def get_legal_case_data():
     data = pd.read_csv('../data/legal-case/legal_case.csv')
+    mask = data['reference'].apply(utils.split_sentence).apply(len) > 5
+    data = data[mask]
     return data['title'].tolist(), data['reference'].tolist(), data['text'].tolist()
 
 
@@ -118,7 +129,8 @@ def newsroom_json2csv():
     with open('../data/newsroom/dev.jsonl', encoding='utf-8') as file:
         for f in file:
             data = json.loads(f)
-            if (data['density_bin'] == 'extractive') and (len(data['summary'].split('. ')) >= 5):
+            if (data['density_bin'] == 'extractive'):# and (len(data['summary'].split('. ')) >= 5):
+            #if len(data['summary'].split('. ')) >= 5:
                 datastore.append(data)
 
     titles, references, text = [], [], []
@@ -134,8 +146,41 @@ def newsroom_json2csv():
     data.to_csv('../data/newsroom/news_dev.csv', index=False, encoding='utf-8')
 
 
-def get_newsroom_data():
+def get_newsroom_data(num=-1):
     data = pd.read_csv('../data/newsroom/news_dev.csv')
     #data['reference'] = data['reference'].apply(clean_text)
     data['text'] = data['text'].apply(clean_text)
+    return data['title'].tolist()[:num], data['reference'].tolist()[:num], data['text'].tolist()[:num]
+
+
+def get_reddit_data(num=-1):
+    data = pd.read_csv('../data/aligned-summarization-data/reddit.csv')
+    data['text'] = data['text'].apply(clean_text)
+    return None, data['reference'].tolist()[:num], data['text'].tolist()[:num]
+
+
+def get_cnn_data(num=None):
+    data = pd.read_csv('../data/cnn.csv')
+    data['text'] = data['text'].apply(clean_text)
+    if num:
+        data = data.sample(n=num)
+        return None, data['reference'].tolist(), data['text'].tolist()
+    return None, data['reference'].tolist(), data['text'].tolist()
+
+
+def get_dailymail_data(num=None):
+    data = pd.read_csv('../data/dailymail.csv')
+    data['text'] = data['text'].apply(clean_text)
+    if num:
+        data = data.sample(n=num)
+        return None, data['reference'].tolist(), data['text'].tolist()
+    return None, data['reference'].tolist(), data['text'].tolist()
+
+
+def get_classical_book_data(num=None):
+    data = pd.read_csv('../data/classical_books.csv')
+    data['text'] = data['text'].apply(clean_text)
+    if num:
+        data = data.sample(n=num)
+        return None, data['reference'].tolist(), data['text'].tolist()
     return data['title'].tolist(), data['reference'].tolist(), data['text'].tolist()
