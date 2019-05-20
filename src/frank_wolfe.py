@@ -392,7 +392,7 @@ class DR_SMRS_Coordinate_Descent(Data_Reducer):
 
 class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
     def __init__(self, init_proportion = None, linear = False, reweight = False, do_scale = False, epsilon = 0, credit = False,
-    alpha = None, beta = None, zeta = 1, positive =False, greedy = True, order = 2, gamma = None, do_rbf_kernel = False, 
+    alpha = None, beta = None, zeta = 1, positive =False, greedy = True, order = 2, gamma = None, do_rbf_kernel = False,
     do_split_by_classes = True, do_centering = True, do_add_equality_constraint = False, term_thres = 1e-8, exemp_thres = 0.01,
     num_exemp = 100, max_iterations=10000, do_SAFE = False, verbose=True, decimate = None, **my_params):
         self.alpha = alpha
@@ -572,7 +572,7 @@ class DR_Frank_Wolfe(DR_SMRS_Coordinate_Descent):
                     trXTK = np.trace(KX)
                     trXTKX = np.linalg.norm(AX, ord="fro")**2
                 else:
-                    #in this situation, we would rather use K than A
+                    # in this situation, we would rather use K than A
                     if len(exemplar_index_lst) == 0:
                         KX = np.zeros((m, m))
                     else:

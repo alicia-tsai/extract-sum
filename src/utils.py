@@ -5,11 +5,12 @@ from collections import defaultdict
 
 import numpy as np
 from scipy import sparse
+from scipy.linalg import sqrtm
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
 from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
-from gensim.summarization.bm25 import get_bm25_weights, iter_bm25_bow
+from gensim.summarization.bm25 import get_bm25_weights
 
 from rouge_scores import Rouge
 import skipthoughts
@@ -57,8 +58,8 @@ def get_bm25_kernel(doc):
     #corpus = clean_sentences(corpus)
     corpus = [sen.token for sen in clean_text_by_sentences(doc)]
     corpus = [s.split() for s in corpus]
-    X = np.sqrt(np.array(get_bm25_weights(corpus, n_jobs=-1)))
-    X[0:3] += 1
+    X = sqrtm(np.array(get_bm25_weights(corpus, n_jobs=-1)))
+    #X[0:3] += 1
 
     # hashable_corpus = _build_hasheable_corpus(_build_corpus(clean_text_by_sentences(doc)))
     #
@@ -163,9 +164,9 @@ def embed_sentence(doc, word_vectors='en_core_web_lg', encoder=None, word2weight
         parameters = params.params()
         parameters.rmpc = rmpc
         embeddings = SIF_embedding.SIF_embedding(embeddings, parameters) # embedding[i,:] is the embedding for sentence i
-        embeddings -= np.min(embeddings)
-        embeddings = np.sqrt(embeddings)
-        embeddings[0:3] += 1
+        #embeddings -= np.min(embeddings)
+        #embeddings = np.sqrt(embeddings)
+        #embeddings[0:3] += 1
 
         return embeddings
 
