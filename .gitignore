@@ -108,5 +108,3 @@ venv.bak/
 .DS_Store
 .xml
 .sqlite
-data/
-embeddings/
